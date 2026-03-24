@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>시간 계산기</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <h1>⏱ 시간 계산기</h1>
+
+  <!-- Tab buttons -->
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="tab-diff">시간 차이</button>
+    <button class="tab-btn" data-tab="tab-addsub">시간 더하기 / 빼기</button>
+    <button class="tab-btn" data-tab="tab-conv">단위 변환</button>
+  </div>
+
+  <!-- ── Tab 1: Time Difference ─────────────────────────────────────────── -->
+  <section id="tab-diff" class="tab-content active">
+    <h2>두 시간의 차이 계산</h2>
+
+    <div class="form-group">
+      <label for="diff-start">시작 시간</label>
+      <input type="time" id="diff-start" />
+    </div>
+
+    <div class="form-group">
+      <label for="diff-end">종료 시간</label>
+      <input type="time" id="diff-end" />
+    </div>
+
+    <button class="btn" id="diff-btn">계산하기</button>
+
+    <div class="result" id="diff-result">결과가 여기에 표시됩니다.</div>
+  </section>
+
+  <!-- ── Tab 2: Add / Subtract Time ────────────────────────────────────── -->
+  <section id="tab-addsub" class="tab-content">
+    <h2>시간 더하기 / 빼기</h2>
+
+    <div class="form-group">
+      <label for="addsub-base">기준 시간</label>
+      <input type="time" id="addsub-base" />
+    </div>
+
+    <div class="form-group">
+      <label>연산</label>
+      <div class="radio-group">
+        <label>
+          <input type="radio" name="operation" value="add" checked /> 더하기 (+)
+        </label>
+        <label>
+          <input type="radio" name="operation" value="sub" /> 빼기 (−)
+        </label>
+      </div>
+    </div>
+
+    <div class="inline-group">
+      <div class="form-group">
+        <label for="addsub-hours">시간 (h)</label>
+        <input type="number" id="addsub-hours" min="0" placeholder="0" />
+      </div>
+      <div class="form-group">
+        <label for="addsub-minutes">분 (m)</label>
+        <input type="number" id="addsub-minutes" min="0" max="59" placeholder="0" />
+      </div>
+    </div>
+
+    <button class="btn" id="addsub-btn">계산하기</button>
+
+    <div class="result" id="addsub-result">결과가 여기에 표시됩니다.</div>
+  </section>
+
+  <!-- ── Tab 3: Unit Conversion ─────────────────────────────────────────── -->
+  <section id="tab-conv" class="tab-content">
+    <h2>시간 단위 변환</h2>
+
+    <div class="form-group">
+      <label for="conv-value">변환할 값</label>
+      <input type="number" id="conv-value" min="0" step="any" placeholder="숫자를 입력하세요" />
+    </div>
+
+    <div class="form-group">
+      <label for="conv-from">단위 선택</label>
+      <select id="conv-from">
+        <option value="seconds">초 (seconds)</option>
+        <option value="minutes">분 (minutes)</option>
+        <option value="hours" selected>시간 (hours)</option>
+        <option value="days">일 (days)</option>
+      </select>
+    </div>
+
+    <button class="btn" id="conv-btn">변환하기</button>
+
+    <div class="result" id="conv-result">결과가 여기에 표시됩니다.</div>
+  </section>
+
+  <script src="script.js"></script>
+</body>
+</html>
