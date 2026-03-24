@@ -1,0 +1,775 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>근무 시간 계산기</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #f4f6fb;
+      --surface: #ffffff;
+      --surface-2: #f8fafc;
+      --fg: #0f172a;
+      --muted: #64748b;
+      --line: #e2e8f0;
+      --accent: #3b5bdb;
+      --accent-soft: color-mix(in srgb, #3b5bdb 12%, transparent);
+      --accent-hover: #2f49b8;
+      --shadow: 0 1px 3px rgb(15 23 42 / 6%), 0 8px 24px rgb(15 23 42 / 6%);
+      --shadow-lg: 0 4px 6px rgb(15 23 42 / 5%), 0 20px 50px rgb(59 91 219 / 10%);
+      --radius: 14px;
+      --radius-sm: 10px;
+      --ok: #059669;
+      --warn: #d97706;
+      --danger: #dc2626;
+      --danger-soft: #fef2f2;
+      --info: #2563eb;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0c0f18;
+        --surface: #141a24;
+        --surface-2: #1a2230;
+        --fg: #f1f5f9;
+        --muted: #94a3b8;
+        --line: #2d3a4f;
+        --accent: #7c9cff;
+        --accent-soft: color-mix(in srgb, #7c9cff 14%, transparent);
+        --accent-hover: #9bb4ff;
+        --shadow: 0 1px 3px rgb(0 0 0 / 35%), 0 12px 32px rgb(0 0 0 / 28%);
+        --shadow-lg: 0 8px 40px rgb(0 0 0 / 45%);
+        --danger-soft: #2a1518;
+        --ok: #34d399;
+        --warn: #fbbf24;
+      }
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Noto Sans KR", "DM Sans", system-ui, sans-serif;
+      font-size: 15px;
+      background: var(--bg);
+      color: var(--fg);
+      line-height: 1.55;
+      min-height: 100vh;
+    }
+    .page-bg {
+      background:
+        radial-gradient(1200px 600px at 80% -10%, var(--accent-soft), transparent 55%),
+        radial-gradient(900px 500px at -5% 30%, color-mix(in srgb, var(--accent) 8%, transparent), transparent 50%),
+        var(--bg);
+    }
+    .wrap {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 28px 20px 56px;
+    }
+    .hero {
+      margin-bottom: 28px;
+    }
+    .hero-card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 28px 32px;
+      box-shadow: var(--shadow-lg);
+      border: 1px solid color-mix(in srgb, var(--line) 80%, transparent);
+    }
+    .hero-badge {
+      display: inline-block;
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--accent);
+      background: var(--accent-soft);
+      padding: 6px 12px;
+      border-radius: 999px;
+      margin: 0 0 12px;
+    }
+    h1 {
+      margin: 0 0 10px;
+      font-size: clamp(1.45rem, 3.5vw, 1.85rem);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.25;
+    }
+    .desc {
+      color: var(--muted);
+      margin: 0;
+      max-width: 52rem;
+      font-size: 0.95rem;
+    }
+    .panel {
+      background: var(--surface);
+      border-radius: var(--radius);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+      padding: 18px 20px;
+      margin-bottom: 18px;
+    }
+    .panel-head {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--muted);
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .panel-head::before {
+      content: "";
+      width: 4px;
+      height: 1rem;
+      border-radius: 2px;
+      background: linear-gradient(180deg, var(--accent), color-mix(in srgb, var(--accent) 40%, white));
+    }
+    .controls {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    button {
+      border: 1px solid var(--line);
+      background: var(--surface-2);
+      color: var(--fg);
+      padding: 10px 18px;
+      border-radius: 999px;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: transform 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease, background 0.12s ease;
+    }
+    button:hover {
+      border-color: color-mix(in srgb, var(--accent) 35%, var(--line));
+      background: var(--surface);
+      box-shadow: 0 2px 8px rgb(15 23 42 / 6%);
+    }
+    button:active { transform: scale(0.98); }
+    button.primary {
+      background: linear-gradient(135deg, var(--accent), color-mix(in srgb, var(--accent) 85%, #6366f1));
+      color: #fff;
+      border-color: transparent;
+      box-shadow: 0 4px 14px color-mix(in srgb, var(--accent) 35%, transparent);
+    }
+    button.primary:hover {
+      filter: brightness(1.05);
+      box-shadow: 0 6px 20px color-mix(in srgb, var(--accent) 40%, transparent);
+    }
+    .bulk-box .label {
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-bottom: 10px;
+      line-height: 1.45;
+    }
+    .bulk-box textarea {
+      width: 100%;
+      min-height: 112px;
+      resize: vertical;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      background: var(--surface-2);
+      color: var(--fg);
+      padding: 12px 14px;
+      font-family: "JetBrains Mono", ui-monospace, monospace;
+      font-size: 0.82rem;
+      line-height: 1.45;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+    .bulk-box textarea:focus {
+      outline: none;
+      border-color: color-mix(in srgb, var(--accent) 45%, var(--line));
+      box-shadow: 0 0 0 3px var(--accent-soft);
+    }
+    .bulk-actions {
+      margin-top: 12px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .table-wrap {
+      overflow-x: auto;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--line);
+      background: var(--surface);
+      -webkit-overflow-scrolling: touch;
+    }
+    .table-wrap::-webkit-scrollbar { height: 10px; }
+    .table-wrap::-webkit-scrollbar-thumb {
+      background: color-mix(in srgb, var(--muted) 35%, transparent);
+      border-radius: 999px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 1180px;
+    }
+    th, td {
+      border-bottom: 1px solid var(--line);
+      padding: 10px 12px;
+      text-align: left;
+      white-space: nowrap;
+      vertical-align: middle;
+      font-size: 0.86rem;
+    }
+    thead th {
+      background: linear-gradient(180deg, var(--surface-2), var(--surface));
+      font-weight: 600;
+      font-size: 0.78rem;
+      color: var(--muted);
+      text-transform: none;
+      letter-spacing: -0.01em;
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      box-shadow: 0 1px 0 var(--line);
+    }
+    tbody tr:nth-child(even):not(.week-divider) td {
+      background: color-mix(in srgb, var(--surface-2) 55%, var(--surface));
+    }
+    tbody tr:hover td {
+      background: color-mix(in srgb, var(--accent) 5%, var(--surface)) !important;
+    }
+    .week-divider td {
+      background: linear-gradient(90deg, var(--accent-soft), transparent) !important;
+      font-weight: 700;
+      font-size: 0.8rem;
+      color: var(--accent);
+      padding: 10px 14px;
+      letter-spacing: 0.02em;
+    }
+    input[type="time"], input[type="number"], select {
+      width: 100%;
+      min-width: 0;
+      box-sizing: border-box;
+      padding: 8px 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface);
+      color: var(--fg);
+      font-family: "JetBrains Mono", ui-monospace, monospace;
+      font-size: 0.8rem;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+    input:focus, select:focus {
+      outline: none;
+      border-color: color-mix(in srgb, var(--accent) 45%, var(--line));
+      box-shadow: 0 0 0 2px var(--accent-soft);
+    }
+    input[type="checkbox"] {
+      width: 1.1rem;
+      height: 1.1rem;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+    td.net, td.excess, td.sweet {
+      font-family: "JetBrains Mono", ui-monospace, monospace;
+      font-size: 0.8rem;
+    }
+    .stats {
+      margin-top: 8px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 14px;
+    }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      padding: 16px 18px;
+      box-shadow: var(--shadow);
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    .card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-lg);
+    }
+    .title {
+      font-size: 0.78rem;
+      font-weight: 500;
+      color: var(--muted);
+      margin-bottom: 8px;
+      line-height: 1.35;
+    }
+    .value {
+      font-size: 1.05rem;
+      font-weight: 600;
+      line-height: 1.35;
+      font-family: "JetBrains Mono", ui-monospace, monospace;
+      word-break: break-all;
+    }
+    .ok { color: var(--ok); }
+    .warn { color: var(--warn); }
+    .ot-short {
+      color: var(--danger);
+      font-weight: 600;
+    }
+    .ot-plus {
+      color: var(--info);
+      font-weight: 600;
+    }
+    @media (prefers-color-scheme: dark) {
+      .ot-short { color: #fca5a5; }
+      .ot-plus { color: #93c5fd; }
+    }
+    .footer-note {
+      margin-top: 24px;
+      padding: 18px 20px;
+      border-radius: var(--radius-sm);
+      background: var(--surface-2);
+      border: 1px dashed color-mix(in srgb, var(--muted) 35%, var(--line));
+      color: var(--muted);
+      font-size: 0.82rem;
+      line-height: 1.65;
+    }
+    .footer-note strong { color: var(--fg); font-weight: 600; }
+  </style>
+</head>
+<body>
+  <div class="page-bg">
+  <div class="wrap">
+    <header class="hero">
+      <div class="hero-card">
+        <p class="hero-badge">2주 · 80시간</p>
+        <h1>근무시간 계산기</h1>
+        <p class="desc">
+          출근·퇴근·휴게를 입력하면 일일 근무·초과·법정 목표 시각(4h / 꿀 / 8h / 잔업)과 주 40시간·2주 80시간 현황을 보여 줍니다.
+          휴가는 <strong>연차 8시간</strong>, <strong>반차 4시간</strong>, <strong>반반차 2시간</strong>으로 반영됩니다.
+        </p>
+      </div>
+    </header>
+
+    <section class="panel">
+      <div class="panel-head">빠른 작업</div>
+      <div class="controls">
+        <button type="button" class="primary" id="btnCalc">계산하기</button>
+        <button type="button" id="btnSample">예시 데이터 넣기</button>
+        <button type="button" id="btnClear">전체 지우기</button>
+      </div>
+    </section>
+
+    <section class="panel bulk-box">
+      <div class="panel-head">데이터 붙여넣기</div>
+      <div class="label">탭으로 구분된 행을 붙여 넣으세요. (출근 [TAB] 퇴근 [TAB] … [TAB] 휴게분)</div>
+      <textarea id="bulkInput" placeholder="08:15:48	20:06:19		30
+08:04:31	22:01:43		0
+...
+			0"></textarea>
+      <div class="bulk-actions">
+        <button type="button" id="btnApplyBulk">붙여넣기 적용</button>
+      </div>
+    </section>
+
+    <section class="panel" style="padding: 0; overflow: hidden;">
+      <div class="panel-head" style="padding: 18px 20px 0; margin-bottom: 12px;">일별 입력 · 계산</div>
+      <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 70px;">일차</th>
+            <th style="width: 115px;">출근</th>
+            <th style="width: 115px;">퇴근</th>
+            <th style="width: 110px;">휴게(분)</th>
+            <th style="width: 110px;">휴일</th>
+            <th style="width: 130px;">휴가</th>
+            <th style="width: 120px;">일일 근무</th>
+            <th style="width: 140px;">일일 초과/미달</th>
+            <th style="width: 115px;">꿀근무</th>
+            <th style="width: 100px;">최소4h</th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+      </div>
+    </section>
+
+    <section class="stats">
+      <div class="card">
+        <div class="title">1주차 총 시간(실근무+휴가)</div>
+        <div class="value" id="week1Total">-</div>
+      </div>
+      <div class="card">
+        <div class="title">2주차 총 시간(실근무+휴가)</div>
+        <div class="value" id="week2Total">-</div>
+      </div>
+      <div class="card">
+        <div class="title">2주 누적 총 시간</div>
+        <div class="value" id="biweeklyTotal">-</div>
+      </div>
+      <div class="card">
+        <div class="title">1주차 마지막 근무일 목표 퇴근시간(40시간 기준)</div>
+        <div class="value" id="week1LastLeave">-</div>
+      </div>
+      <div class="card">
+        <div class="title">2주차 마지막 근무일 목표 퇴근시간(80시간 기준)</div>
+        <div class="value" id="week2LastLeave">-</div>
+      </div>
+      <div class="card">
+        <div class="title">전체 초과/미달 합계</div>
+        <div class="value" id="overtimeTotal">-</div>
+      </div>
+    </section>
+
+    <footer class="footer-note">
+      - 퇴근시간은 다음날로 넘어가는 근무(야간근무)도 자동 처리합니다.<br />
+      - 일일 근무 = 체류 − 입력 휴게(분) − <strong>체류 구간별 법정 의무 휴게</strong>(4h~9h: 30분, 9h~12h: 60분, 12h~: 90분).<br />
+      - 꿀근무=출근+8h29m (고정)<br />
+      - 초과 시간 = 일일 근무 − 8시간 (음수면 그만큼 부족).<br />
+      - 휴일 체크 시 해당 일차는 0시간으로 처리됩니다.<br />
+      - 최소 4시간 규칙은 휴일이 아니고 휴가를 사용하지 않은 날에만 체크합니다.
+    </footer>
+  </div>
+  </div>
+
+  <script>
+    const DAYS = 14;
+    const WEEK_TARGET_SEC = 40 * 3600;
+    const BIWEEK_TARGET_SEC = 80 * 3600;
+    const SWEET_WORK_SEC = (8 * 3600) + (29 * 60);
+    const EIGHT_H_SEC = 8 * 3600;
+    const DAILY_MIN_SEC = 4 * 3600;
+    const LEAVE_SECONDS = {
+      none: 0,
+      half: 4 * 3600,
+      quarter: 2 * 3600,
+      full: 8 * 3600
+    };
+
+    const rowsEl = document.getElementById("rows");
+
+    function toSec(hms) {
+      if (!hms) return null;
+      const parts = hms.split(":").map(Number);
+      if (parts.length !== 3 || parts.some(Number.isNaN)) return null;
+      return parts[0] * 3600 + parts[1] * 60 + parts[2];
+    }
+
+    function secToHMS(totalSec) {
+      const sign = totalSec < 0 ? "-" : "";
+      const sec = Math.abs(Math.floor(totalSec));
+      const h = Math.floor(sec / 3600);
+      const m = Math.floor((sec % 3600) / 60);
+      const s = sec % 60;
+      return `${sign}${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+    }
+
+    function formatExcess(totalSec) {
+      if (totalSec === 0) return "00:00:00";
+      if (totalSec > 0) return `초과 ${secToHMS(totalSec)}`;
+      return `미달 ${secToHMS(totalSec).replace(/^-/, "")}`;
+    }
+
+    /** 초과 = 일일 근무 − 8시간 (음수면 부족) */
+    function computeExcessSec(netSec) {
+      return netSec - EIGHT_H_SEC;
+    }
+
+    /** 4h/8h 목표 시각: 출근 + (휴게≥30분이면 점심 등 +30분 반영) */
+    function fourHourLeaveOffsetSec(breakMin) {
+      return (4 * 3600) + (30 * 60) + (breakMin >= 30 ? 30 * 60 : 0);
+    }
+    function eightHourLeaveOffsetSec(breakMin) {
+      return (9 * 3600) + (breakMin >= 30 ? 30 * 60 : 0);
+    }
+
+    /**
+     * 체류시간 구간별 의무 휴게(엑셀 예시와 맞춤)
+     * 4h~8h30m 미만: 30분 / 8h30m~12h 미만: 60분 / 12h 이상: 90분
+     */
+    function mandatoryBreakSec(elapsedSec) {
+      if (elapsedSec < 4 * 3600) return 0;
+      if (elapsedSec < (8 * 3600) + (30 * 60)) return 30 * 60;
+      if (elapsedSec < 12 * 3600) return 60 * 60;
+      return 90 * 60;
+    }
+
+    function secToTimeOfDay(sec) {
+      const daySec = ((sec % 86400) + 86400) % 86400;
+      const h = Math.floor(daySec / 3600);
+      const m = Math.floor((daySec % 3600) / 60);
+      const s = daySec % 60;
+      return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+    }
+
+    function manualBreakSec(breakMin) {
+      return Math.max(0, breakMin) * 60;
+    }
+
+    function netFromElapsed(elapsedSec, breakMin) {
+      return Math.max(0, elapsedSec - manualBreakSec(breakMin) - mandatoryBreakSec(elapsedSec));
+    }
+
+    /** 목표 실근무에 도달하는 최소 체류시간(의무휴게가 체류에 따라 변함) */
+    function findElapsedForTargetWork(targetWorkSec, breakMin) {
+      for (let elapsed = 0; elapsed <= 48 * 3600; elapsed += 1) {
+        if (netFromElapsed(elapsed, breakMin) >= targetWorkSec) return elapsed;
+      }
+      return null;
+    }
+
+    function createRows() {
+      const fragment = document.createDocumentFragment();
+      for (let i = 1; i <= DAYS; i += 1) {
+        if (i === 8) {
+          const divider = document.createElement("tr");
+          divider.className = "week-divider";
+          divider.innerHTML = `<td colspan="10">2주차</td>`;
+          fragment.appendChild(divider);
+        }
+        const tr = document.createElement("tr");
+        tr.dataset.day = String(i);
+        tr.innerHTML = `
+          <td>D${i}</td>
+          <td><input type="time" step="1" class="start" /></td>
+          <td><input type="time" step="1" class="end" /></td>
+          <td><input type="number" class="break" min="0" max="600" value="0" /></td>
+          <td><input type="checkbox" class="holiday" /></td>
+          <td>
+            <select class="leave">
+              <option value="none">없음</option>
+              <option value="quarter">반반차(2h)</option>
+              <option value="half">반차(4h)</option>
+              <option value="full">연차(8h)</option>
+            </select>
+          </td>
+          <td class="net">-</td>
+          <td class="excess">-</td>
+          <td class="sweet">-</td>
+          <td class="mincheck">-</td>
+        `;
+        fragment.appendChild(tr);
+      }
+      rowsEl.appendChild(fragment);
+    }
+
+    function setRowsFromData(data) {
+      const trs = Array.from(rowsEl.querySelectorAll("tr")).filter((tr) => tr.dataset.day);
+      trs.forEach((tr, idx) => {
+        const row = data[idx] || ["", "", 0];
+        const [s, e, b] = row;
+        const isHoliday = !s && !e;
+        tr.querySelector(".start").value = s;
+        tr.querySelector(".end").value = e;
+        tr.querySelector(".break").value = String(Number.isFinite(b) ? b : 0);
+        tr.querySelector(".holiday").checked = isHoliday;
+        tr.querySelector(".leave").value = "none";
+      });
+    }
+
+    function parseBulkText(text) {
+      const lines = text.split(/\r?\n/).slice(0, DAYS);
+      const parsed = [];
+      for (const line of lines) {
+        if (!line) {
+          parsed.push(["", "", 0]);
+          continue;
+        }
+        const cols = line.split("\t");
+        const start = (cols[0] || "").trim();
+        const end = (cols[1] || "").trim();
+        let breakMin = 0;
+        for (let i = cols.length - 1; i >= 0; i -= 1) {
+          const raw = (cols[i] || "").trim();
+          if (!raw) continue;
+          const n = Number(raw);
+          if (!Number.isNaN(n)) {
+            breakMin = Math.max(0, n);
+            break;
+          }
+        }
+        parsed.push([start, end, breakMin]);
+      }
+      while (parsed.length < DAYS) parsed.push(["", "", 0]);
+      return parsed;
+    }
+
+    function getRowData(tr) {
+      const startStr = tr.querySelector(".start").value;
+      const endStr = tr.querySelector(".end").value;
+      const breakMin = Number(tr.querySelector(".break").value || 0);
+      const holiday = tr.querySelector(".holiday").checked;
+      const leave = tr.querySelector(".leave").value;
+      const leaveSec = LEAVE_SECONDS[leave] || 0;
+
+      const startSec = toSec(startStr);
+      let endSec = toSec(endStr);
+
+      let netSec = 0;
+      let breakSec = 0;
+      if (!holiday && startSec !== null && endSec !== null) {
+        if (endSec < startSec) endSec += 86400;
+        const elapsedSec = Math.max(0, endSec - startSec);
+        const manualSec = manualBreakSec(breakMin);
+        const mandatorySec = mandatoryBreakSec(elapsedSec);
+        breakSec = manualSec + mandatorySec;
+        netSec = Math.max(0, elapsedSec - breakSec);
+      }
+
+      const totalSec = holiday ? 0 : netSec + leaveSec;
+      const hasWorkTimes = !holiday && startSec !== null && endSec !== null;
+      const excessSec = hasWorkTimes ? computeExcessSec(netSec) : null;
+      let sweetLeave = "-";
+      if (!holiday && startSec !== null) {
+        sweetLeave = secToTimeOfDay(startSec + SWEET_WORK_SEC);
+      }
+
+      const minRuleApplies = !holiday && leaveSec === 0 && (startSec !== null || endSec !== null);
+      const minSatisfied = minRuleApplies ? netSec >= DAILY_MIN_SEC : true;
+
+      return {
+        tr,
+        startSec,
+        breakMin,
+        holiday,
+        leaveSec,
+        breakSec,
+        netSec,
+        totalSec,
+        excessSec,
+        sweetLeave,
+        minRuleApplies,
+        minSatisfied
+      };
+    }
+
+    function findLastWorkdayIndex(dayData, from, to) {
+      for (let i = to; i >= from; i -= 1) {
+        if (dayData[i].startSec !== null && !dayData[i].holiday) return i;
+      }
+      return null;
+    }
+
+    function computeTargetLeaveTime(dayData, lastIdx, targetSec, rangeFrom, rangeTo) {
+      if (lastIdx === null) return "-";
+      let accumulated = 0;
+      for (let i = rangeFrom; i <= rangeTo; i += 1) {
+        if (i === lastIdx) continue;
+        accumulated += dayData[i].totalSec;
+      }
+      const needOnLast = Math.max(0, targetSec - accumulated);
+      const row = dayData[lastIdx];
+      const targetNetOnLast = Math.max(0, needOnLast - row.leaveSec);
+      const needElapsed = findElapsedForTargetWork(targetNetOnLast, row.breakMin);
+      if (needElapsed === null || needElapsed === undefined) return "-";
+      const leaveTimeSec = row.startSec + needElapsed;
+      return `${secToTimeOfDay(leaveTimeSec)} (필요근무 ${secToHMS(needOnLast)})`;
+    }
+
+    function render() {
+      const trs = Array.from(rowsEl.querySelectorAll("tr")).filter((tr) => tr.dataset.day);
+      const dayData = trs.map(getRowData);
+
+      dayData.forEach((d) => {
+        d.tr.querySelector(".net").textContent = secToHMS(d.netSec);
+        const exEl = d.tr.querySelector(".excess");
+        if (d.excessSec === null) {
+          exEl.textContent = "-";
+          exEl.className = "excess";
+        } else {
+          exEl.textContent = formatExcess(d.excessSec);
+          exEl.className =
+            "excess" +
+            (d.excessSec < 0 ? " ot-short" : d.excessSec > 0 ? " ot-plus" : "");
+        }
+        d.tr.querySelector(".sweet").textContent = d.sweetLeave;
+        if (!d.minRuleApplies) {
+          d.tr.querySelector(".mincheck").textContent = "면제";
+          d.tr.querySelector(".mincheck").className = "mincheck";
+        } else if (d.minSatisfied) {
+          d.tr.querySelector(".mincheck").textContent = "충족";
+          d.tr.querySelector(".mincheck").className = "mincheck ok";
+        } else {
+          d.tr.querySelector(".mincheck").textContent = "미충족";
+          d.tr.querySelector(".mincheck").className = "mincheck warn";
+        }
+      });
+
+      const week1 = dayData.slice(0, 7);
+      const week2 = dayData.slice(7, 14);
+
+      const week1TotalSec = week1.reduce((acc, d) => acc + d.totalSec, 0);
+      const week2TotalSec = week2.reduce((acc, d) => acc + d.totalSec, 0);
+      const biTotalSec = week1TotalSec + week2TotalSec;
+      const overtimeTotalSec = dayData.reduce((acc, d) => acc + (d.excessSec ?? 0), 0);
+
+      document.getElementById("week1Total").textContent =
+        `${secToHMS(week1TotalSec)} / 40:00:00 (${secToHMS(week1TotalSec - WEEK_TARGET_SEC)})`;
+      document.getElementById("week2Total").textContent =
+        `${secToHMS(week2TotalSec)} / 40:00:00 (${secToHMS(week2TotalSec - WEEK_TARGET_SEC)})`;
+      document.getElementById("biweeklyTotal").textContent =
+        `${secToHMS(biTotalSec)} / 80:00:00 (${secToHMS(biTotalSec - BIWEEK_TARGET_SEC)})`;
+      const otTotalEl = document.getElementById("overtimeTotal");
+      otTotalEl.textContent = formatExcess(overtimeTotalSec);
+      otTotalEl.className =
+        "value" +
+        (overtimeTotalSec < 0 ? " ot-short" : overtimeTotalSec > 0 ? " ot-plus" : "");
+
+      const week1LastIdx = findLastWorkdayIndex(dayData, 0, 6);
+      const week2LastIdx = findLastWorkdayIndex(dayData, 7, 13);
+
+      document.getElementById("week1LastLeave").textContent =
+        computeTargetLeaveTime(dayData, week1LastIdx, WEEK_TARGET_SEC, 0, 6);
+      document.getElementById("week2LastLeave").textContent =
+        computeTargetLeaveTime(dayData, week2LastIdx, BIWEEK_TARGET_SEC, 0, 13);
+    }
+
+    function bindEvents() {
+      rowsEl.addEventListener("input", render);
+      rowsEl.addEventListener("change", render);
+
+      document.getElementById("btnCalc").addEventListener("click", render);
+      document.getElementById("btnClear").addEventListener("click", () => {
+        const trs = Array.from(rowsEl.querySelectorAll("tr")).filter((tr) => tr.dataset.day);
+        trs.forEach((tr) => {
+          tr.querySelector(".start").value = "";
+          tr.querySelector(".end").value = "";
+          tr.querySelector(".break").value = "0";
+          tr.querySelector(".holiday").checked = false;
+          tr.querySelector(".leave").value = "none";
+        });
+        render();
+      });
+
+      document.getElementById("btnSample").addEventListener("click", () => {
+        const sample = [
+          ["08:15:48", "20:06:19", 30],
+          ["08:04:31", "22:01:43", 0],
+          ["08:01:24", "16:08:06", 0],
+          ["07:47:43", "18:00:15", 30],
+          ["08:12:24", "16:52:12", 0],
+          ["", "", 0],
+          ["", "", 0],
+          ["06:43:36", "16:38:59", 41],
+          ["07:43:25", "17:44:33", 30],
+          ["07:32:43", "21:02:20", 40],
+          ["07:46:17", "18:17:53", 30],
+          ["07:42:44", "16:33:33", 0],
+          ["", "", 0],
+          ["", "", 0]
+        ];
+        setRowsFromData(sample);
+        document.getElementById("bulkInput").value = sample
+          .map(([s, e, b]) => `${s}\t${e}\t\t${b}`)
+          .join("\n");
+        render();
+      });
+
+      document.getElementById("btnApplyBulk").addEventListener("click", () => {
+        const inputText = document.getElementById("bulkInput").value;
+        const parsed = parseBulkText(inputText);
+        setRowsFromData(parsed);
+        render();
+      });
+    }
+
+    createRows();
+    bindEvents();
+    render();
+  </script>
+</body>
+</html>
