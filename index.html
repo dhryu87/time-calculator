@@ -192,6 +192,53 @@
       gap: 10px;
       flex-wrap: wrap;
     }
+    .paste-guide {
+      margin-bottom: 14px;
+      padding: 14px 16px;
+      border-radius: var(--radius-sm);
+      border: 1px dashed color-mix(in srgb, var(--muted) 35%, var(--line));
+      background: var(--surface-2);
+    }
+    .paste-guide h3 {
+      margin: 0 0 10px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--fg);
+    }
+    .paste-guide figure {
+      margin: 0 0 12px;
+    }
+    .paste-guide img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      display: block;
+    }
+    .paste-guide figcaption {
+      margin-top: 8px;
+      font-size: 0.78rem;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+    .paste-guide ol {
+      margin: 0;
+      padding-left: 1.25rem;
+      font-size: 0.85rem;
+      color: var(--muted);
+      line-height: 1.65;
+    }
+    .paste-guide ol strong {
+      color: var(--fg);
+    }
+    kbd {
+      font-family: ui-monospace, monospace;
+      font-size: 0.85em;
+      padding: 0.1em 0.35em;
+      border-radius: 4px;
+      border: 1px solid var(--line);
+      background: var(--surface);
+    }
     .table-wrap {
       overflow-x: auto;
       border-radius: var(--radius-sm);
@@ -359,7 +406,18 @@
 
     <section class="panel bulk-box">
       <div class="panel-head">데이터 붙여넣기</div>
-      <div class="label">탭으로 구분된 행을 붙여 넣으세요. (출근 [TAB] 퇴근 [TAB] … [TAB] 휴게분)</div>
+      <div class="paste-guide">
+        <h3>출퇴근 데이터 복사 방법</h3>
+        <figure>
+          <img src="public/example.png" alt="월요일 행 기준, 오른쪽 두 번째 셀부터 0 또는 30이 들어 있는 셀까지 드래그 후 복사하는 예시" width="800" loading="lazy" />
+          <figcaption>월요일 행 기준, 오른쪽 2번째 셀부터 0/30이 들어 있는 셀까지 드래그 후 복사</figcaption>
+        </figure>
+        <ol>
+          <li>월요일 행 기준, <strong>오른쪽 2번째 셀부터 0/30이 들어 있는 셀까지</strong> 드래그 후 복사합니다.</li>
+          <li>복사한 값을 <strong>데이터 붙여넣기</strong> 영역에 붙여넣고 <strong>붙여넣기 적용</strong> 버튼을 클릭합니다.</li>
+        </ol>
+      </div>
+      <div class="label">탭으로 구분된 행을 붙여 넣으세요. (출근 [TAB] 퇴근 [TAB] … [TAB] 휴게분) — 아래 입력란에 포커스가 있을 때 <kbd>Tab</kbd> 키로 탭 문자를 넣을 수 있습니다.</div>
       <textarea id="bulkInput" placeholder="08:15:48	20:06:19		30
 08:04:31	22:01:43		0
 ...
@@ -777,6 +835,21 @@
     }
 
     function bindEvents() {
+      const bulkInputEl = document.getElementById("bulkInput");
+      bulkInputEl.addEventListener("keydown", (e) => {
+        if (e.key !== "Tab") return;
+        e.preventDefault();
+        const ta = e.target;
+        if (!(ta instanceof HTMLTextAreaElement)) return;
+        const start = ta.selectionStart;
+        const end = ta.selectionEnd;
+        const v = ta.value;
+        const insert = "\t";
+        ta.value = `${v.slice(0, start)}${insert}${v.slice(end)}`;
+        const pos = start + insert.length;
+        ta.selectionStart = ta.selectionEnd = pos;
+      });
+
       rowsEl.addEventListener("input", render);
       rowsEl.addEventListener("change", render);
       rowsEl.addEventListener("change", (e) => {
