@@ -165,85 +165,6 @@
         var(--bg);
     }
 
-    /* Theme modal */
-    .theme-modal-overlay {
-      position: fixed;
-      inset: 0;
-      z-index: 200;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      padding: 16px;
-      background: rgba(0, 0, 0, 0.45);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-    }
-    .theme-modal-overlay.open { display: flex; }
-    .theme-modal {
-      width: 100%;
-      max-width: 420px;
-      border-radius: 16px;
-      border: 1px solid var(--line);
-      background: color-mix(in srgb, var(--surface) 92%, transparent);
-      box-shadow: var(--shadow-lg);
-      padding: 16px;
-      color: var(--fg);
-    }
-    .theme-modal-head {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 12px;
-      margin-bottom: 12px;
-    }
-    .theme-modal-title {
-      font-weight: 900;
-      font-size: 1rem;
-      letter-spacing: -0.01em;
-    }
-    .theme-modal-close {
-      width: 40px;
-      height: 40px;
-      border-radius: 12px;
-      border: 1px solid var(--line);
-      background: var(--surface-2);
-      color: var(--fg);
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .theme-options {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 10px;
-      margin-top: 8px;
-    }
-    .theme-option {
-      width: 100%;
-      padding: 12px 14px;
-      border-radius: 14px;
-      border: 1px solid var(--line);
-      background: var(--surface-2);
-      color: var(--fg);
-      cursor: pointer;
-      font-weight: 800;
-      text-align: left;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      transition: transform 0.08s ease, border-color 0.12s ease, background 0.12s ease;
-    }
-    .theme-option:hover {
-      border-color: color-mix(in srgb, var(--accent) 35%, var(--line));
-      background: var(--surface);
-    }
-    .theme-option:active { transform: scale(0.99); }
-    .theme-option small {
-      font-weight: 800;
-      color: var(--muted);
-    }
     .hero-badge {
       display: inline-block;
       font-size: 0.72rem;
@@ -622,8 +543,8 @@
           <span class="label">TARGET</span>
           <span class="hours">80.00 HRS</span>
         </div>
-        <button type="button" class="settings-btn" id="btnThemeSettings" aria-label="Settings">
-          <span class="material-symbols-outlined">settings</span>
+        <button type="button" class="settings-btn" id="btnThemeToggle" aria-label="라이트 테마로 전환">
+          <span class="material-symbols-outlined" id="themeToggleIcon" aria-hidden="true">light_mode</span>
         </button>
       </div>
     </header>
@@ -746,31 +667,6 @@
       - 최소 4시간 규칙은 휴일이 아니고 휴가를 사용하지 않은 날에만 체크합니다.
     </footer>
 
-    <div class="theme-modal-overlay" id="themeModalOverlay" role="dialog" aria-modal="true" aria-labelledby="themeModalTitle">
-      <div class="theme-modal">
-        <div class="theme-modal-head">
-          <div>
-            <div class="theme-modal-title" id="themeModalTitle">테마 설정</div>
-            <div style="margin-top: 6px; color: var(--muted); font-weight: 800; font-size: 0.84rem;">
-              현재 테마 또는 화이트 테마로 전환할 수 있습니다.
-            </div>
-          </div>
-          <button type="button" class="theme-modal-close" id="btnThemeModalClose" aria-label="Close">
-            <span class="material-symbols-outlined" aria-hidden="true">close</span>
-          </button>
-        </div>
-        <div class="theme-options">
-          <button type="button" class="theme-option" data-theme="dark">
-            <span>현재 테마(다크)</span>
-            <small>Default</small>
-          </button>
-          <button type="button" class="theme-option" data-theme="light">
-            <span>화이트 테마(라이트)</span>
-            <small>Light</small>
-          </button>
-        </div>
-      </div>
-    </div>
   </div>
   </div>
 
@@ -794,6 +690,20 @@
 
     const THEME_KEY = "theme";
 
+    function syncThemeToggleButton() {
+      const btn = document.getElementById("btnThemeToggle");
+      const icon = document.getElementById("themeToggleIcon");
+      if (!btn || !icon) return;
+      const isLight = document.documentElement.dataset.theme === "light";
+      if (isLight) {
+        icon.textContent = "dark_mode";
+        btn.setAttribute("aria-label", "다크 테마로 전환");
+      } else {
+        icon.textContent = "light_mode";
+        btn.setAttribute("aria-label", "라이트 테마로 전환");
+      }
+    }
+
     function applyTheme(theme) {
       const t = theme === "light" ? "light" : "dark";
       document.documentElement.dataset.theme = t;
@@ -802,6 +712,7 @@
       } catch {
         // ignore
       }
+      syncThemeToggleButton();
     }
 
     function initTheme() {
@@ -812,18 +723,6 @@
         // ignore
       }
       applyTheme(t);
-    }
-
-    function openThemeModal() {
-      const overlay = document.getElementById("themeModalOverlay");
-      if (!overlay) return;
-      overlay.classList.add("open");
-    }
-
-    function closeThemeModal() {
-      const overlay = document.getElementById("themeModalOverlay");
-      if (!overlay) return;
-      overlay.classList.remove("open");
     }
 
     initTheme();
@@ -1200,35 +1099,13 @@
       });
 
       document.getElementById("btnCalc").addEventListener("click", render);
-      const btnThemeSettings = document.getElementById("btnThemeSettings");
-      if (btnThemeSettings) {
-        btnThemeSettings.addEventListener("click", openThemeModal);
-      }
-
-      const btnThemeModalClose = document.getElementById("btnThemeModalClose");
-      if (btnThemeModalClose) {
-        btnThemeModalClose.addEventListener("click", closeThemeModal);
-      }
-
-      const overlay = document.getElementById("themeModalOverlay");
-      if (overlay) {
-        overlay.addEventListener("click", (e) => {
-          if (e.target === overlay) closeThemeModal();
+      const btnThemeToggle = document.getElementById("btnThemeToggle");
+      if (btnThemeToggle) {
+        btnThemeToggle.addEventListener("click", () => {
+          const isLight = document.documentElement.dataset.theme === "light";
+          applyTheme(isLight ? "dark" : "light");
         });
       }
-
-      window.addEventListener("keydown", (e) => {
-        if (e.key === "Escape") closeThemeModal();
-      });
-
-      const themeOptions = Array.from(document.querySelectorAll(".theme-option"));
-      themeOptions.forEach((btn) => {
-        btn.addEventListener("click", () => {
-          const theme = btn.getAttribute("data-theme") || "dark";
-          applyTheme(theme);
-          closeThemeModal();
-        });
-      });
 
       document.getElementById("btnClear").addEventListener("click", () => {
         const trs = Array.from(rowsEl.querySelectorAll("tr")).filter((tr) => tr.dataset.day);
