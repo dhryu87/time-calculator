@@ -356,28 +356,34 @@
       background: var(--surface);
       -webkit-overflow-scrolling: touch;
     }
+    @media (min-width: 720px) {
+      .table-wrap { overflow-x: visible; }
+    }
     .table-wrap::-webkit-scrollbar { height: 10px; }
     .table-wrap::-webkit-scrollbar-thumb {
       background: color-mix(in srgb, var(--muted) 35%, transparent);
       border-radius: 999px;
     }
-    table {
+    .table-wrap table {
       width: 100%;
       border-collapse: collapse;
-      min-width: 1180px;
+      table-layout: fixed;
     }
-    th, td {
+    .table-wrap th,
+    .table-wrap td {
       border-bottom: 1px solid var(--line);
-      padding: 10px 12px;
-      text-align: left;
+      padding: 6px 4px;
+      text-align: center;
       white-space: nowrap;
       vertical-align: middle;
-      font-size: 0.86rem;
+      font-size: 0.78rem;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
-    thead th {
+    .table-wrap thead th {
       background: linear-gradient(180deg, var(--surface-2), var(--surface));
       font-weight: 600;
-      font-size: 0.78rem;
+      font-size: 0.7rem;
       color: var(--muted);
       text-transform: none;
       letter-spacing: -0.01em;
@@ -385,6 +391,11 @@
       top: 0;
       z-index: 2;
       box-shadow: 0 1px 0 var(--line);
+      white-space: normal;
+      line-height: 1.25;
+      text-align: center;
+      overflow: visible;
+      text-overflow: clip;
     }
     tbody tr:nth-child(even):not(.week-divider) td {
       background: color-mix(in srgb, var(--surface-2) 55%, var(--surface));
@@ -403,17 +414,27 @@
       color: var(--accent);
       padding: 10px 14px;
       letter-spacing: 0.02em;
+      text-align: left;
     }
-    td.daycell {
+    .table-wrap td.daycell {
       text-align: center;
       font-family: "JetBrains Mono", ui-monospace, monospace;
-      font-size: 0.86rem;
+      font-size: 0.78rem;
       font-weight: 900;
       color: var(--accent);
       padding-left: 0;
       padding-right: 0;
       background: color-mix(in srgb, var(--surface-2) 55%, transparent);
     }
+    .table-wrap .col-day { width: 5%; }
+    .table-wrap .col-time { width: 11%; }
+    .table-wrap .col-break { width: 7%; }
+    .table-wrap .col-holiday { width: 5%; }
+    .table-wrap .col-leave { width: 13%; }
+    .table-wrap .col-net { width: 11%; }
+    .table-wrap .col-excess { width: 14%; }
+    .table-wrap .col-sweet { width: 11%; }
+    .table-wrap .col-min { width: 12%; }
     input[type="time"], input[type="number"], select {
       width: 100%;
       min-width: 0;
@@ -427,6 +448,26 @@
       font-size: 0.8rem;
       transition: border-color 0.15s ease, box-shadow 0.15s ease;
     }
+    .table-wrap input[type="time"],
+    .table-wrap input[type="number"],
+    .table-wrap select {
+      padding: 5px 3px;
+      font-size: 0.72rem;
+      border-radius: 6px;
+      text-align: center;
+      text-align-last: center;
+    }
+    .table-wrap input[type="time"]::-webkit-datetime-edit {
+      margin: auto;
+    }
+    .table-wrap td.cell-holiday {
+      padding-left: 2px;
+      padding-right: 2px;
+    }
+    .table-wrap td.cell-holiday input[type="checkbox"] {
+      display: block;
+      margin: 0 auto;
+    }
     input:focus, select:focus {
       outline: none;
       border-color: color-mix(in srgb, var(--accent) 45%, var(--line));
@@ -438,9 +479,13 @@
       accent-color: var(--accent);
       cursor: pointer;
     }
-    td.net, td.excess, td.sweet {
+    .table-wrap td.net,
+    .table-wrap td.excess,
+    .table-wrap td.sweet,
+    .table-wrap td.mincheck {
       font-family: "JetBrains Mono", ui-monospace, monospace;
-      font-size: 0.8rem;
+      font-size: 0.72rem;
+      text-align: center;
     }
     .stats {
       margin-top: 8px;
@@ -612,18 +657,30 @@
       <div class="panel-head" style="padding: 18px 20px 0; margin-bottom: 12px;">일별 입력 · 계산</div>
       <div class="table-wrap">
       <table>
+        <colgroup>
+          <col class="col-day" />
+          <col class="col-time" />
+          <col class="col-time" />
+          <col class="col-break" />
+          <col class="col-holiday" />
+          <col class="col-leave" />
+          <col class="col-net" />
+          <col class="col-excess" />
+          <col class="col-sweet" />
+          <col class="col-min" />
+        </colgroup>
         <thead>
           <tr>
-            <th style="width: 70px;">일차</th>
-            <th style="width: 115px;">출근</th>
-            <th style="width: 115px;">퇴근</th>
-            <th style="width: 110px;">휴게(분)</th>
-            <th style="width: 110px;">휴일</th>
-            <th style="width: 130px;">휴가</th>
-            <th style="width: 120px;">일일 근무</th>
-            <th style="width: 140px;">일일 초과/미달</th>
-            <th style="width: 115px;">꿀근무</th>
-            <th style="width: 100px;">최소4h</th>
+            <th>일차</th>
+            <th>출근</th>
+            <th>퇴근</th>
+            <th>휴게(분)</th>
+            <th>휴일</th>
+            <th>휴가</th>
+            <th>일일 근무</th>
+            <th>일일 초과/미달</th>
+            <th>꿀근무</th>
+            <th>최소4h</th>
           </tr>
         </thead>
         <tbody id="rows"></tbody>
@@ -810,11 +867,11 @@
         tr.dataset.day = String(i);
         tr.innerHTML = `
           <td class="daycell">D${i}</td>
-          <td><input type="time" step="1" class="start" /></td>
-          <td><input type="time" step="1" class="end" /></td>
-          <td><input type="number" class="break" min="0" max="600" value="0" /></td>
-          <td><input type="checkbox" class="holiday" /></td>
-          <td>
+          <td class="cell-time"><input type="time" step="1" class="start" /></td>
+          <td class="cell-time"><input type="time" step="1" class="end" /></td>
+          <td class="cell-break"><input type="number" class="break" min="0" max="600" value="0" /></td>
+          <td class="cell-holiday"><input type="checkbox" class="holiday" /></td>
+          <td class="cell-leave">
             <select class="leave">
               <option value="none">없음</option>
               <option value="quarter">반반차(2h)</option>
