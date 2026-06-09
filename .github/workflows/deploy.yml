@@ -1,4 +1,3 @@
----
 name: Deploy static content to Pages
 
 "on":
@@ -35,7 +34,7 @@ jobs:
       name: github-pages
       url: >-
         ${{
-          steps.deploy_retry.outputs.page_url || steps.deploy.outputs.page_url
+          steps.deploy.outputs.page_url || steps.deploy_retry.outputs.page_url
         }}
     steps:
       - name: Deploy to GitHub Pages
